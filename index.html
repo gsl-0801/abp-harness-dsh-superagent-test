@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1b0213">
+<title>小目标红包 · 先发一个小目标</title>
+<style>
+  :root {
+    --ink: #fff6e6;
+    --ink-dim: rgba(255, 240, 214, .62);
+    --gold-1: #fff3b0;
+    --gold-2: #ffd54a;
+    --gold-3: #f2a007;
+    --gold-4: #a86400;
+    --red-1: #ff4f5e;
+    --red-2: #e3122f;
+    --red-3: #8d0016;
+    --purple: #7b2ff7;
+    --cyan: #3ef2ff;
+    --pink: #ff77d1;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    color: var(--ink);
+    font-family: "PingFang SC", "HarmonyOS Sans SC", "Noto Sans SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+    background: #12000c;
+    overscroll-behavior: none;
+  }
+
+  /* ---------- 背景 ---------- */
+  #fx {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #ff3d6e 0%, rgba(255, 61, 110, 0) 55%),
+      radial-gradient(90% 60% at 10% 15%, rgba(123, 47, 247, .75) 0%, rgba(123, 47, 247, 0) 60%),
+      radial-gradient(80% 60% at 95% 25%, rgba(62, 242, 255, .28) 0%, rgba(62, 242, 255, 0) 60%),
+      radial-gradient(120% 90% at 50% 110%, #6d0018 0%, rgba(109, 0, 24, 0) 65%),
+      linear-gradient(170deg, #1b0213 0%, #25001a 40%, #0c0009 100%);
+  }
+
+  .bg::after {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background-image:
+      linear-gradient(rgba(255, 213, 74, .07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 213, 74, .07) 1px, transparent 1px);
+    background-size: 44px 44px;
+    transform: perspective(600px) rotateX(62deg) translateY(18%);
+    transform-origin: 50% 100%;
+    mask-image: linear-gradient(to top, #000 0%, transparent 62%);
+    -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 62%);
+    animation: grid 14s linear infinite;
+  }
+
+  @keyframes grid {
+    to { background-position: 0 44px, 44px 0; }
+  }
+
+  .stage {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: calc(20px + var(--safe-top)) 18px calc(26px + var(--safe-bottom));
+  }
+
+  /* ---------- 顶部 ---------- */
+  .topbar {
+    width: 100%;
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    letter-spacing: .16em;
+    color: var(--ink-dim);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .brand .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--gold-2);
+    box-shadow: 0 0 10px var(--gold-2), 0 0 22px var(--red-1);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  .live {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 213, 74, .28);
+    background: rgba(255, 213, 74, .07);
+    color: var(--gold-1);
+  }
+
+  .live b {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+
+  @keyframes pulse {
+    50% { opacity: .35; transform: scale(.8); }
+  }
+
+  /* ---------- 红包 ---------- */
+  .packet-wrap {
+    position: relative;
+    margin-top: clamp(14px, 4vh, 40px);
+    width: min(78vw, 340px);
+    will-change: transform;
+  }
+
+  .packet-wrap .float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    50% { transform: translateY(-10px); }
+  }
+
+  .halo {
+    position: absolute;
+    inset: -22%;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--red-1), var(--gold-2), var(--purple), var(--cyan), var(--pink), var(--red-1));
+    filter: blur(34px) saturate(140%);
+    opacity: .55;
+    animation: spin 9s linear infinite;
+    z-index: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .rings {
+    position: absolute;
+    inset: -12%;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .rings i {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 213, 74, .38);
+    animation: ping 3.6s ease-out infinite;
+  }
+
+  .rings i:nth-child(2) { animation-delay: 1.2s; }
+  .rings i:nth-child(3) { animation-delay: 2.4s; }
+
+  @keyframes ping {
+    0% { transform: scale(.75); opacity: .9; }
+    100% { transform: scale(1.25); opacity: 0; }
+  }
+
+  .coin-orbit {
+    position: absolute;
+    inset: -9%;
+    z-index: 2;
+    pointer-events: none;
+    animation: spin 12s linear infinite;
+  }
+
+  .coin-orbit span {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #7a3c00;
+    background: radial-gradient(circle at 35% 30%, #fff6c2, var(--gold-2) 55%, var(--gold-3) 100%);
+    box-shadow: 0 0 14px rgba(255, 213, 74, .8), inset 0 0 6px rgba(168, 100, 0, .5);
+  }
+
+  .coin-orbit span:nth-child(1) { top: -14px; left: 50%; margin-left: -15px; }
+  .coin-orbit span:nth-child(2) { bottom: 4%; right: -6px; }
+  .coin-orbit span:nth-child(3) { bottom: 4%; left: -6px; }
+
+  .packet {
+    position: relative;
+    z-index: 1;
+    aspect-ratio: 3 / 4.05;
+    width: 100%;
+    border-radius: 26px 26px 22px 22px;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    display: block;
+    color: inherit;
+    font: inherit;
+    background:
+      radial-gradient(120% 70% at 50% 0%, #ff7a86 0%, rgba(255, 122, 134, 0) 55%),
+      linear-gradient(160deg, #ff4f5e 0%, var(--red-2) 48%, #a3001b 100%);
+    box-shadow:
+      0 34px 70px -22px rgba(255, 30, 70, .75),
+      0 0 0 1px rgba(255, 213, 74, .5) inset,
+      0 0 0 6px rgba(255, 213, 74, .1) inset,
+      0 18px 40px rgba(0, 0, 0, .45);
+    overflow: hidden;
+    transition: transform .25s cubic-bezier(.2, .9, .3, 1.4);
+    transform-style: preserve-3d;
+  }
+
+  .packet:active { transform: scale(.975); }
+
+  .packet.is-open { animation: openLift .45s cubic-bezier(.2, .9, .3, 1.3) both; }
+
+  @keyframes openLift {
+    40% { transform: scale(1.06) rotate(2deg); filter: brightness(1.25); }
+    100% { transform: scale(.92); filter: brightness(.8); }
+  }
+
+  .packet:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }
+
+  .packet.shake { animation: shake .5s cubic-bezier(.36, .07, .19, .97) both; }
+
+  @keyframes shake {
+    20% { transform: translateX(-6px) rotate(-1.2deg); }
+    40% { transform: translateX(6px) rotate(1.2deg); }
+    60% { transform: translateX(-4px) rotate(-.8deg); }
+    80% { transform: translateX(3px) rotate(.6deg); }
+  }
+
+  .packet .shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .38) 46%, rgba(255, 255, 255, .05) 54%, transparent 66%);
+    background-size: 240% 100%;
+    animation: shine 4.2s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+
+  @keyframes shine {
+    0%, 35% { background-position: 160% 0; }
+    75%, 100% { background-position: -60% 0; }
+  }
+
+  .packet .pattern {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 12px 12px, rgba(255, 213, 74, .16) 1.6px, transparent 1.8px);
+    background-size: 24px 24px;
+    opacity: .9;
+    pointer-events: none;
+  }
+
+  .packet .cover-flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 42%;
+    border-bottom-left-radius: 120% 70%;
+    border-bottom-right-radius: 120% 70%;
+    background:
+      radial-gradient(80% 100% at 50% 0%, #ff6c7a 0%, #e3122f 60%, #c00020 100%);
+    box-shadow: 0 10px 24px -10px rgba(80, 0, 10, .8), 0 2px 0 rgba(255, 255, 255, .12) inset;
+    pointer-events: none;
+  }
+
+  .seal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+    width: 40%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at 35% 28%, #fff8cf 0%, var(--gold-2) 38%, var(--gold-3) 72%, var(--gold-4) 100%);
+    box-shadow:
+      0 0 0 3px rgba(255, 243, 176, .55),
+      0 0 0 9px rgba(255, 213, 74, .16),
+      0 0 34px rgba(255, 213, 74, .85),
+      0 10px 20px rgba(60, 0, 10, .55);
+    animation: sealPulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes sealPulse {
+    50% { box-shadow: 0 0 0 3px rgba(255, 243, 176, .75), 0 0 0 13px rgba(255, 213, 74, .1), 0 0 52px rgba(255, 213, 74, 1), 0 10px 20px rgba(60, 0, 10, .55); }
+  }
+
+  .seal b {
+    font-family: "STKaiti", "KaiTi", "Songti SC", serif;
+    font-size: clamp(26px, 8vw, 36px);
+    line-height: 1;
+    color: #9b1400;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, .65);
+    letter-spacing: -2px;
+  }
+
+  .seal::before {
+    content: "";
+    position: absolute;
+    inset: 12%;
+    border-radius: 50%;
+    border: 1px dashed rgba(155, 20, 0, .45);
+  }
+
+  .packet-foot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 8%;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .packet-foot span {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: .32em;
+    color: #ffe8a8;
+    background: rgba(0, 0, 0, .2);
+    border: 1px solid rgba(255, 213, 74, .35);
+  }
+
+  .hint {
+    margin-top: 18px;
+    font-size: 13px;
+    letter-spacing: .22em;
+    color: var(--gold-1);
+    text-shadow: 0 0 14px rgba(255, 213, 74, .6);
+  }
+
+  .hint em {
+    font-style: normal;
+    animation: blink 1.4s steps(2, start) infinite;
+  }
+
+  @keyframes blink { 50% { opacity: .25; } }
+
+  /* ---------- 打开的卡片 ---------- */
+  .packet.is-open .packet-foot,
+  .packet.is-open .seal { opacity: 0; transition: opacity .3s; }
+
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: 22px;
+    background: radial-gradient(70% 60% at 50% 45%, rgba(255, 40, 80, .28), rgba(6, 0, 6, .82) 70%);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .35s ease, visibility .35s;
+  }
+
+  .overlay.show { opacity: 1; visibility: visible; }
+
+  .card {
+    position: relative;
+    width: min(92vw, 380px);
+    border-radius: 28px;
+    padding: 30px 24px 24px;
+    text-align: center;
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgba(255, 213, 74, .18), transparent 60%),
+      linear-gradient(165deg, #2b0417 0%, #48061f 55%, #1d0210 100%);
+    border: 1px solid rgba(255, 213, 74, .55);
+    box-shadow:
+      0 0 0 6px rgba(255, 213, 74, .06),
+      0 40px 90px -30px rgba(255, 30, 70, .8),
+      inset 0 1px 0 rgba(255, 255, 255, .18);
+    transform: translateY(26px) scale(.94);
+    transition: transform .45s cubic-bezier(.2, .9, .25, 1.35);
+  }
+
+  .overlay.show .card { transform: translateY(0) scale(1); }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: 28px;
+    padding: 1px;
+    background: linear-gradient(120deg, transparent 15%, var(--gold-2) 45%, var(--cyan) 55%, transparent 85%);
+    background-size: 300% 100%;
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: borderRun 3.5s linear infinite;
+    pointer-events: none;
+  }
+
+  @keyframes borderRun {
+    to { background-position: 300% 0; }
+  }
+
+  .card-ribbon {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: .2em;
+    color: #2a0009;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--gold-1), var(--gold-2) 50%, var(--gold-1));
+    box-shadow: 0 6px 20px -6px rgba(255, 213, 74, .9);
+  }
+
+  .from {
+    margin: 16px 0 2px;
+    font-size: 14px;
+    color: var(--ink-dim);
+  }
+
+  .from b { color: var(--ink); font-weight: 600; }
+
+  .amount {
+    margin: 8px 0 2px;
+    font-family: "DIN Alternate", "Bebas Neue", "Impact", "PingFang SC", sans-serif;
+    font-size: clamp(52px, 17vw, 76px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: .01em;
+    font-variant-numeric: tabular-nums;
+    color: #ffe06a;
+    text-shadow:
+      0 0 18px rgba(255, 213, 74, .65),
+      0 0 46px rgba(255, 90, 40, .45),
+      0 4px 0 rgba(120, 40, 0, .55);
+  }
+
+  .amount small {
+    font-size: .42em;
+    margin-right: 4px;
+    vertical-align: 2px;
+    color: var(--gold-1);
+  }
+
+  .amount-sub {
+    font-size: 13px;
+    letter-spacing: .18em;
+    color: var(--gold-1);
+    opacity: .85;
+  }
+
+  .wish {
+    margin: 18px auto 6px;
+    max-width: 17em;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--ink);
+  }
+
+  .wish b {
+    color: var(--gold-2);
+    text-shadow: 0 0 12px rgba(255, 213, 74, .7);
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin: 16px 0 22px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tags li {
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    color: var(--gold-1);
+    background: rgba(255, 213, 74, .08);
+    border: 1px solid rgba(255, 213, 74, .28);
+  }
+
+  .claim {
+    position: relative;
+    width: 100%;
+    height: 54px;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    color: #3a0008;
+    background: linear-gradient(100deg, #ffe993 0%, var(--gold-2) 40%, #ffb300 75%, #ffe993 100%);
+    background-size: 220% 100%;
+    box-shadow: 0 14px 34px -12px rgba(255, 213, 74, .95), inset 0 -3px 0 rgba(150, 80, 0, .35);
+    animation: flow 3s linear infinite;
+    overflow: hidden;
+  }
+
+  .claim::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .85), transparent);
+    transform: skewX(-18deg);
+    animation: sweep 2.8s ease-in-out infinite;
+  }
+
+  @keyframes flow { to { background-position: 220% 0; } }
+  @keyframes sweep { 0% { left: -60%; } 60%, 100% { left: 130%; } }
+
+  .claim:active { transform: translateY(1px) scale(.99); }
+
+  .secondary {
+    margin-top: 10px;
+    width: 100%;
+    height: 42px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 213, 74, .35);
+    background: transparent;
+    color: var(--gold-1);
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: .12em;
+    cursor: pointer;
+  }
+
+  .card .result {
+    position: absolute;
+    inset: 0;
+    border-radius: 28px;
+    display: grid;
+    grid-template-rows: auto auto auto auto auto;
+    place-content: center;
+    gap: 6px;
+    padding: 24px;
+    background:
+      radial-gradient(70% 60% at 50% 30%, rgba(255, 213, 74, .28), transparent 65%),
+      linear-gradient(165deg, #2b0417 0%, #48061f 55%, #1d0210 100%);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(.96);
+    transition: opacity .3s, transform .35s cubic-bezier(.2, .9, .25, 1.4), visibility .3s;
+  }
+
+  .card .result.show { opacity: 1; visibility: visible; transform: scale(1); }
+
+  .result .tick {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 30px;
+    color: #2a0009;
+    background: radial-gradient(circle at 35% 30%, #fff8cf, var(--gold-2) 60%, var(--gold-3));
+    box-shadow: 0 0 0 8px rgba(255, 213, 74, .12), 0 0 40px rgba(255, 213, 74, .8);
+    animation: pop .5s cubic-bezier(.2, .9, .3, 1.6) both;
+  }
+
+  @keyframes pop {
+    from { transform: scale(.3); opacity: 0; }
+  }
+
+  .result h3 { margin: 14px 0 2px; font-size: 17px; letter-spacing: .1em; }
+  .result p { margin: 0; font-size: 13px; color: var(--ink-dim); letter-spacing: .06em; }
+
+  .result .got {
+    margin: 10px 0 4px;
+    font-family: "DIN Alternate", "Bebas Neue", "Impact", sans-serif;
+    font-size: 44px;
+    font-weight: 800;
+    color: #ffe06a;
+    text-shadow: 0 0 24px rgba(255, 213, 74, .7);
+  }
+
+  /* ---------- 底部数据 ---------- */
+  .stats {
+    width: 100%;
+    max-width: 520px;
+    margin-top: clamp(18px, 4vh, 36px);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+
+  .stat {
+    padding: 12px 8px;
+    border-radius: 16px;
+    text-align: center;
+    background: linear-gradient(160deg, rgba(255, 213, 74, .1), rgba(255, 213, 74, .02));
+    border: 1px solid rgba(255, 213, 74, .18);
+  }
+
+  .stat b {
+    display: block;
+    font-size: 16px;
+    font-variant-numeric: tabular-nums;
+    color: var(--gold-1);
+  }
+
+  .stat span {
+    font-size: 11px;
+    letter-spacing: .1em;
+    color: var(--ink-dim);
+  }
+
+  footer {
+    margin-top: auto;
+    padding-top: 22px;
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: rgba(255, 240, 214, .35);
+    text-align: center;
+  }
+
+  .flash {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    background: radial-gradient(circle at 50% 45%, rgba(255, 244, 200, .95), rgba(255, 213, 74, .35) 35%, transparent 65%);
+    opacity: 0;
+  }
+
+  .flash.on { animation: flash .7s ease-out; }
+
+  @keyframes flash {
+    0% { opacity: .95; }
+    100% { opacity: 0; }
+  }
+
+  @media (min-width: 760px) and (min-height: 760px) {
+    .packet-wrap { width: 340px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: .001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .001ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="flash" id="flash" aria-hidden="true"></div>
+
+<main class="stage">
+  <header class="topbar">
+    <div class="brand"><i class="dot"></i>小目标红包</div>
+    <div class="live">已发放 <b id="sentCount">9,998,321</b> 个</div>
+  </header>
+
+  <section class="packet-wrap">
+    <div class="float">
+      <div class="halo" aria-hidden="true"></div>
+      <div class="rings" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="coin-orbit" aria-hidden="true"><span>¥</span><span>¥</span><span>¥</span></div>
+
+      <button class="packet" id="packet" type="button" aria-label="拆开小目标红包">
+        <div class="pattern" aria-hidden="true"></div>
+        <div class="cover-flap" aria-hidden="true"></div>
+        <div class="shine" aria-hidden="true"></div>
+        <div class="seal" aria-hidden="true"><b>福</b></div>
+        <div class="packet-foot"><span>恭喜发财</span></div>
+      </button>
+    </div>
+  </section>
+
+  <p class="hint"><em>轻点红包·拆开一个小目标</em></p>
+
+  <section class="stats" aria-label="红包数据">
+    <div class="stat"><b id="statCount">9,998,321</b><span>已发放 / 个</span></div>
+    <div class="stat"><b id="statAmount">¥ 1.00亿</b><span>累计金额</span></div>
+    <div class="stat"><b id="statLuck">持续上涨</b><span>今日好运指数</span></div>
+  </section>
+
+  <footer>小目标红包 · 祝你的事业也先来一个亿</footer>
+</main>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="cardOwner" hidden>
+  <div class="card" id="card">
+    <span class="card-ribbon">小目标红包</span>
+    <p class="from" id="cardOwner">来自 <b>神秘的金主爸爸</b> 的小目标红包</p>
+    <div class="amount"><small>¥</small><span id="amountText">0</span></div>
+    <p class="amount-sub">壹亿元整 · 100,000,000.00</p>
+    <p class="wish">愿你今年的目标不是“先赚一个亿”，<br>而是<b>先领一个亿</b>。</p>
+    <ul class="tags">
+      <li>手气排行 TOP 1</li>
+      <li>限量 9,999,999 份</li>
+      <li>24 小时内有效</li>
+    </ul>
+    <button class="claim" id="claim" type="button">拆开红包</button>
+    <button class="secondary" id="share" type="button">也发给朋友一个小目标</button>
+
+    <div class="result" id="result">
+      <div class="tick">✓</div>
+      <h3>领取成功</h3>
+      <div class="got" id="got">¥ 100,000,000</div>
+      <p id="gotTip">金额已进入你的小目标账户</p>
+      <button class="claim" id="again" type="button" style="margin-top:18px">再拆一个</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TARGET = 100000000;
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var packet = $("packet");
+  var overlay = $("overlay");
+  var card = $("card");
+  var amountText = $("amountText");
+  var result = $("result");
+  var got = $("got");
+  var gotTip = $("gotTip");
+  var flash = $("flash");
+  var claim = $("claim");
+  var opened = false;
+  var busy = false;
+  var progressTimer = null;
+  var isOpen = false;
+
+  /* ---------- 弹层开合 ---------- */
+  function showOverlay() {
+    if (isOpen) return;
+    isOpen = true;
+    overlay.hidden = false;
+    forceStyle(overlay, "transition: none !important; opacity: 0 !important;");
+    void overlay.offsetWidth;
+    forceStyle(overlay, "");
+    overlay.classList.add("show");
+  }
+
+  function hideOverlay() {
+    if (!isOpen) return;
+    isOpen = false;
+    overlay.classList.remove("show");
+    result.classList.remove("show");
+    setTimeout(function () {
+      if (!isOpen) overlay.hidden = true;
+    }, 360);
+  }
+
+  // 用 CSSOM 设内联样式（部分 WebView 不支持 style.cssText，内联样式也优先于动画与 .show）
+  function forceStyle(el, css) {
+    var sheet = el.style;
+    if ("cssText" in sheet) sheet.cssText = css;
+    else {
+      var props = ["transition", "opacity"];
+      for (var i = 0; i < props.length; i++) sheet.removeProperty(props[i]);
+      if (css) {
+        sheet.setProperty("transition", "none", "important");
+        sheet.setProperty("opacity", "0", "important");
+      }
+    }
+  }
+
+  // 兜底：任何来源的点击（含触摸合成的 click 被取消）都走同一逻辑
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    if (t.closest("#packet")) { openPacket(); return; }
+    if (e.target === overlay) { closePacket(); return; }
+    if (t.closest("#claim")) { claimPacket(); return; }
+    if (t.closest("#again")) {
+      result.classList.remove("show");
+      amountText.textContent = "0";
+      got.textContent = "¥ 0";
+      gotTip.textContent = "金额已进入你的小目标账户";
+      countUp(amountText, TARGET, { dur: 900 });
+    }
+  }, false);
+
+  function fmt(n) {
+    return n.toLocaleString("en-US");
+  }
+
+  /* ---------- 计数文字 ---------- */
+  function countUp(el, to, opts) {
+    opts = opts || {};
+    var from = opts.from || 0;
+    var dur = reduced ? 0 : (opts.dur || 1400);
+    var prefix = opts.prefix || "";
+    var start = 0;
+    function frame(t) {
+      if (!start) start = t;
+      var p = dur <= 0 ? 1 : Math.min(1, (t - start) / dur);
+      var e = 1 - Math.pow(1 - p, 3);
+      var v = Math.round(from + (to - from) * e);
+      el.textContent = prefix + fmt(v);
+      if (p < 1) requestAnimationFrame(frame);
+      else if (opts.suffix) el.textContent = prefix + fmt(to) + opts.suffix;
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- 打开红包 ---------- */
+  function openPacket() {
+    if (opened) return;
+    opened = true;
+    if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+    busy = false;
+    claim.disabled = false;
+    result.classList.remove("show");
+    amountText.textContent = "0";
+    packet.classList.add("is-open");
+    burst(window.innerWidth / 2, window.innerHeight * 0.4, 46);
+
+    setTimeout(function () {
+      showOverlay();
+      countUp(amountText, TARGET, { dur: 1800 });
+    }, reduced ? 0 : 320);
+  }
+
+  function closePacket() {
+    hideOverlay();
+    opened = false;
+    packet.classList.remove("is-open");
+    busy = false;
+    claim.disabled = false;
+  }
+
+  function claimPacket() {
+    if (busy) return;
+    busy = true;
+    claim.disabled = true;
+
+    var r = card.getBoundingClientRect();
+    flash.classList.remove("on");
+    void flash.offsetWidth;
+    flash.classList.add("on");
+    burst(r.left + r.width / 2, r.top + r.height / 2, 80);
+
+    setTimeout(function () {
+      result.classList.add("show");
+      countUp(got, TARGET, { dur: 1300, prefix: "¥ " });
+      var n = 0;
+      if (progressTimer) clearInterval(progressTimer);
+      var tick = progressTimer = setInterval(function () {
+        n += 137;
+        gotTip.textContent = "金额已进入你的小目标账户，当前进度 " + Math.min(n, 100) + "%";
+        if (n >= 100) {
+          clearInterval(tick);
+          progressTimer = null;
+          gotTip.textContent = "金额已进入你的小目标账户，进度 100%";
+          busy = false;
+          claim.disabled = false;
+        }
+      }, 18);
+    }, reduced ? 0 : 280);
+  }
+
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && isOpen) closePacket(); });
+  $("share").addEventListener("click", function () {
+    var btn = this;
+    var text = "我先替你领了一个小目标红包，你也来拆一个！";
+    function copied() { btn.textContent = "链接已复制，去发给朋友吧"; }
+    if (navigator.share) {
+      navigator.share({ title: "小目标红包", text: text, url: location.href }).catch(function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text + " " + location.href).then(copied, copied);
+    } else {
+      copied();
+    }
+  });
+
+  /* ---------- 雪花：金币 / 星屑 / 丝带 ---------- */
+  var canvas = $("fx");
+  var ctx = canvas.getContext("2d");
+  var W = 0, H = 0, DPR = 1;
+  var flakes = [];
+  var coins = [];
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function makeFlake(init) {
+    return {
+      x: Math.random() * W,
+      y: init ? Math.random() * H : -20,
+      r: 0.8 + Math.random() * 2.2,
+      vy: 0.25 + Math.random() * 0.9,
+      vx: (Math.random() - 0.5) * 0.5,
+      a: 0.25 + Math.random() * 0.6,
+      tw: Math.random() * Math.PI * 2,
+      hue: Math.random() < 0.6 ? "#ffd54a" : (Math.random() < 0.5 ? "#ff77d1" : "#3ef2ff")
+    };
+  }
+
+  function makeCoin() {
+    return {
+      x: Math.random() * W,
+      y: -30 - Math.random() * H,
+      r: 5 + Math.random() * 6,
+      vy: 0.6 + Math.random() * 1.4,
+      vx: (Math.random() - 0.5) * 0.7,
+      rot: Math.random() * Math.PI,
+      vr: (Math.random() - 0.5) * 0.06,
+      a: 0.55 + Math.random() * 0.45
+    };
+  }
+
+  function initFx() {
+    resize();
+    var n = reduced ? 30 : Math.min(110, Math.round(W * H / 12000));
+    flakes = [];
+    coins = [];
+    for (var i = 0; i < n; i++) flakes.push(makeFlake(true));
+    for (var j = 0; j < Math.max(4, Math.round(n / 8)); j++) coins.push(makeCoin());
+    for (var k = 0; k < coins.length; k++) coins[k].y = Math.random() * H;
+  }
+
+  function drawCoin(c) {
+    ctx.save();
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rot);
+    ctx.scale(Math.abs(Math.cos(c.rot * 1.7)) * 0.75 + 0.25, 1);
+    ctx.globalAlpha = c.a;
+    var g = ctx.createRadialGradient(-c.r * 0.35, -c.r * 0.4, 0, 0, 0, c.r);
+    g.addColorStop(0, "#fff7c7");
+    g.addColorStop(0.55, "#ffd54a");
+    g.addColorStop(1, "#c98a00");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(0, 0, c.r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(168,100,0,.7)";
+    ctx.lineWidth = Math.max(0.8, c.r * 0.16);
+    ctx.beginPath();
+    ctx.arc(0, 0, c.r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(140,80,0,.85)";
+    ctx.font = "700 " + Math.round(c.r * 1.15) + "px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("¥", 0, c.r * 0.06);
+    ctx.restore();
+  }
+
+  function tickFx() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "lighter";
+
+    for (var i = 0; i < flakes.length; i++) {
+      var f = flakes[i];
+      f.y += f.vy;
+      f.x += f.vx + Math.sin((f.y + f.tw) / 60) * 0.35;
+      f.tw += 0.03;
+      if (f.y > H + 8) { flakes[i] = makeFlake(false); continue; }
+      if (f.x < -8) f.x = W + 8;
+      if (f.x > W + 8) f.x = -8;
+      ctx.globalAlpha = f.a * (0.5 + 0.5 * Math.sin(f.tw));
+      ctx.fillStyle = f.hue;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    for (var j = 0; j < coins.length; j++) {
+      var c = coins[j];
+      c.y += c.vy;
+      c.x += c.vx;
+      c.rot += c.vr;
+      if (c.y > H + 30) { coins[j] = makeCoin(); continue; }
+    }
+
+    ctx.globalCompositeOperation = "source-over";
+    for (var k = 0; k < coins.length; k++) drawCoin(coins[k]);
+    ctx.globalAlpha = 1;
+  }
+
+  /* ---------- 绽放粒子 ---------- */
+  var parts = [];
+  function burst(cx, cy, n) {
+    if (reduced) return;
+    for (var i = 0; i < n; i++) {
+      var ang = Math.random() * Math.PI * 2;
+      var sp = 2 + Math.random() * 8;
+      parts.push({
+        x: cx, y: cy,
+        vx: Math.cos(ang) * sp,
+        vy: Math.sin(ang) * sp - 2,
+        g: 0.14 + Math.random() * 0.12,
+        life: 1,
+        decay: 0.012 + Math.random() * 0.016,
+        r: 1.5 + Math.random() * 3.4,
+        color: Math.random() < 0.55 ? "255,213,74" : (Math.random() < 0.5 ? "255,80,110" : "62,242,255")
+      });
+    }
+  }
+
+  function tickParts() {
+    if (!parts.length) return;
+    ctx.globalCompositeOperation = "lighter";
+    for (var i = parts.length - 1; i >= 0; i--) {
+      var p = parts[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.g;
+      p.vx *= 0.985;
+      p.life -= p.decay;
+      if (p.life <= 0) { parts.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = "rgba(" + p.color + ",1)";
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+  }
+
+  function loop() {
+    tickFx();
+    tickParts();
+    requestAnimationFrame(loop);
+  }
+
+  window.addEventListener("resize", resize);
+  initFx();
+
+  if (!reduced) {
+    requestAnimationFrame(loop);
+  } else {
+    tickFx();
+  }
+
+  /* ---------- 数字实时滚动 ---------- */
+  var sent = 9998321;
+  var statCount = $("statCount");
+  var sentCount = $("sentCount");
+  var luckWords = ["持续上涨", "一路绿灯", "好运加满", "一亿在手"];
+  setInterval(function () {
+    sent += Math.floor(1 + Math.random() * 7);
+    statCount.textContent = fmt(sent);
+    sentCount.textContent = fmt(sent);
+    if (Math.random() < 0.35) {
+      $("statLuck").textContent = luckWords[Math.floor(Math.random() * luckWords.length)];
+    }
+  }, 2000);
+
+  /* 首屏轻微视差 */
+  if (!reduced && window.matchMedia("(pointer: fine)").matches) {
+    window.addEventListener("mousemove", function (e) {
+      var dx = (e.clientX / window.innerWidth - 0.5) * 14;
+      var dy = (e.clientY / window.innerHeight - 0.5) * 10;
+      var wrap = document.querySelector(".packet-wrap");
+      wrap.style.transform = "translate3d(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px,0)";
+    });
+  }
+})();
+</script>
+</body>
+</html>

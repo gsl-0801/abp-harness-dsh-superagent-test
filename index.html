@@ -249,15 +249,6 @@
 
   .packet:focus-visible { outline: 3px solid var(--cyan); outline-offset: 4px; }
 
-  .packet.shake { animation: shake .5s cubic-bezier(.36, .07, .19, .97) both; }
-
-  @keyframes shake {
-    20% { transform: translateX(-6px) rotate(-1.2deg); }
-    40% { transform: translateX(6px) rotate(1.2deg); }
-    60% { transform: translateX(-4px) rotate(-.8deg); }
-    80% { transform: translateX(3px) rotate(.6deg); }
-  }
-
   .packet .shine {
     position: absolute;
     inset: 0;
@@ -845,7 +836,7 @@
 
   /* ---------- 打开红包 ---------- */
   function openPacket() {
-    if (opened) return;
+    if (opened || isOpen) return;
     opened = true;
     if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
     busy = false;
